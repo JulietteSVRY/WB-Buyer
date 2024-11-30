@@ -1,0 +1,416 @@
+@startuml
+actor Администратор as Admin
+
+(Перейти в раздел "Управление пользователями") as UC_ManageUsers
+(Просмотреть пользователей сервиса) as UC_ViewUsers
+(Фильтровать пользователей) as UC_FilterUsers
+(Поиск нужного пользователя) as UC_SearchUser
+(Пользователь не найден) as UC_UserNotFound
+(Повторный ввод правильных данных) as UC_RetrySearch
+(Просмотр профиля пользователя) as UC_ViewUserProfile
+(Заблокировать пользователя) as UC_BlockUser
+(Подтверждение блокировки) as UC_ConfirmBlock
+(Разблокировать пользователя) as UC_UnblockUser
+(Подтверждение разблокировки) as UC_ConfirmUnblock
+
+(Перейти в раздел "Управление отзывами") as UC_ManageReviews
+(Просмотреть отзывы) as UC_ViewReviews
+(Сортировка и фильтрация отзывов) as UC_SortFilterReviews
+(Выбор отзыва "нарушителя") as UC_SelectOffenderReview
+(Отображение подробной информации отзыва) as UC_ViewReviewDetails
+(Удаление отзыва) as UC_DeleteReview
+(Подтверждение удаления) as UC_ConfirmDeleteReview
+(Отзыв уже удален) as UC_ReviewAlreadyDeleted
+(Выход) as UC_ExitReview
+
+(Перейти в раздел "Управление товарами") as UC_ManageProducts
+(Просмотреть товары) as UC_ViewProducts
+(Сортировка и фильтрация товаров) as UC_SortFilterProducts
+(Выбор товара нарушителя) as UC_SelectOffenderProduct
+(Отображение подробной информации товара) as UC_ViewProductDetails
+(Удаление товара) as UC_DeleteProduct
+(Подтверждение удаления) as UC_ConfirmDeleteProduct
+(Товар уже удален) as UC_ProductAlreadyDeleted
+(Просмотр профиля продавца) as UC_ViewSellerProfile
+(Выход из товара) as UC_ExitProduct
+
+Admin --> UC_ManageUsers
+UC_ManageUsers ..> UC_ViewUsers : <<include>>
+UC_ViewUsers --> UC_FilterUsers
+UC_ViewUsers --> UC_SearchUser
+note as N2
+Condition: пользователя с такими данными нет
+Extension point: пользователь не найден
+end note
+UC_SearchUser .. N2 : <<extend>>
+N2 ..> UC_UserNotFound
+UC_UserNotFound --> UC_RetrySearch
+UC_RetrySearch --> UC_ViewUserProfile
+UC_SearchUser --> UC_ViewUserProfile
+UC_ViewUserProfile ..> UC_BlockUser : <<extend>>
+UC_BlockUser --> UC_ConfirmBlock
+UC_ViewUserProfile ..> UC_UnblockUser : <<extend>>
+UC_UnblockUser --> UC_ConfirmUnblock
+
+Admin --> UC_ManageReviews
+Admin ..> UC_Login
+UC_ManageReviews ..> UC_ViewReviews : <<include>>
+UC_ViewReviews --> UC_SortFilterReviews
+UC_SortFilterReviews --> UC_SelectOffenderReview
+UC_SelectOffenderReview --> UC_ViewReviewDetails
+UC_ViewReviewDetails --> UC_DeleteReview
+UC_DeleteReview --> UC_ConfirmDeleteReview
+UC_DeleteReview ..> UC_ReviewAlreadyDeleted : <<extend>>
+UC_ReviewAlreadyDeleted --> UC_ExitReview
+
+Admin --> UC_ManageProducts
+UC_ManageProducts ..> UC_ViewProducts : <<include>>
+UC_ViewProducts --> UC_SortFilterProducts
+UC_SortFilterProducts --> UC_SelectOffenderProduct
+UC_SelectOffenderProduct --> UC_ViewProductDetails
+UC_ViewProductDetails --> UC_DeleteProduct
+UC_DeleteProduct --> UC_ConfirmDeleteProduct
+UC_DeleteProduct ..> UC_ProductAlreadyDeleted : <<extend>>
+UC_ConfirmDeleteProduct --> UC_ViewSellerProfile
+UC_ProductAlreadyDeleted --> UC_ExitProduct
+
+note as N3
+Condition: если пользователь имеет несколько предупреждений о нарушениях - его блокируют
+Extension point: блокировка пользователя за нарушение
+end note
+UC_ViewSellerProfile .. N3 : <<extend>>
+N3 ..> UC_BlockUser
+@enduml
+
+
+
+
+
+
+@startuml
+actor Покупатель
+actor Платежная_система
+(Зарегистрироваться в приложении) as UC_Register
+(Ошибка при регистрации) as UC_RegisterError
+(Исправление ошибочных данных) as UC_FixRegistrationError
+(Повторная регистрация) as UC_Reregister
+(Авторизоваться в приложении) as UC_Login
+(Ошибка при авторизации) as UC_LoginError
+(Восстановление пароля через почту) as UC_PasswordRecovery
+(Исправление введенных оишбочных данных) as UC_NewPassword
+(Ввод нового пароля, его сохранение) as UCSAVE
+(Повторная авторизация) as UC_Relogin
+(Вход в систему) as UCEX
+(Снятие оплаты за заказ со счета покупателя) as SNYAT
+(Открыть главную страницу) as UC_OpenMainPage
+(Открыть раздел распродажи) as UC_OpenSales
+(Найти товар через поиск или категории) as UC_SearchProducts
+(Ввод названия товара или категории) as UC_OpenProductPage
+(Посмотреть каталог товаров) as UC_SawProducts
+(Добавить товар в избранное) as UC_AddToFavorites
+(Выбрать параметры товара) as UC_SelectProductOptions
+(Фильтровать товары по выбранным параметрам) as UCF
+(Найти подходящий товар) as UCPR
+(Перейти на страницу с информацией о товаре) as UCGO
+(Прочитать описание товара) as UCREA
+(Добавить товар в корзину) as UC_AddToCart
+(Товар добавлен в корзину) as UC_CartSuccess
+(Товара нет в наличии) as UC_OutOfStock
+(Перейти на страницу корзина) as UC_OpenCart
+(Посмотреть товары в корзине) as UC_ViewCart
+(Перейти к оформлению заказа) as UC_Checkout
+(Изменить товары в корзине) as UC_ModifyCart
+(Выбрать пункт доставки) as UC_SelectDelivery
+(Выбрать способ оплаты) as UC_SelectPayment
+(Пункт ПВЗ недоступен) as UC_PVZUnavailable
+(Выбран другой пункт) as UCSEL
+(Подтвердить заказ) as UC_ConfirmOrder
+(Проверка личности пользователя) as Lichn
+(Проверка наличия нужного баланса на счете) as Pover
+(Переход на страницу оплаты выбранного банка) as UC_GOSTR
+(Уведомление о принятии заказа) as UC_OrderAccepted
+(Выбрать другой способ оплаты) as UC_ChangePaymentMethod
+(Пополнить баланс способа оплаты) as UC_TopUpBalance
+(Повторное подтверждение заказа) as UC_ConfirmOrderAgain
+(Перейти на страницу Личный кабинет) as UC_OpenAccount
+(Перейти в настройки) as UC_OpenSettings
+(Посмотреть личную информацию) as UC_ViewPersonalInfo
+(Изменить личные данные) as UC_ModifyPersonalInfo
+(Перейти в Покупки) as UC_ViewPurchases
+(Поставить рейтинг и написать отзыв) as UC_RateAndReview
+(Перейти в Доставки) as UC_ViewDeliveries
+(Посмотреть статус заказа) as UC_ViewOrderStatus
+(Посмотреть адрес и время работы ПВЗ) as UC_ViewPVZInfo
+(Перейти в чат со службой поддержки) as UCCHAT
+(Написать вопрос) as UCQ
+(Уведомление об ошибки при оплате) as Uvedom
+(Посмотреть купленные товары) as UCBUY
+(Перейти в раздел Оставить отзыв на товар) as UCOTZ
+(Посмотреть ожидаемые доставки заказанных товаров) as UCOJID
+
+Покупатель --> UC_Register
+note as N2
+Condition: ошибка при регистрации/авторизации, например, 
+данный номер телефона/почта уже используются,пароль неправильный
+Extension point: ошибка при регистрации/авторизации. 
+end note
+(UC_Register) .. N2 : <<extend>>
+N2 ..> (UC_RegisterError)
+UC_RegisterError --> UC_FixRegistrationError
+UC_FixRegistrationError --> UC_Reregister
+UC_Register ..> UC_Login : <<include>>
+Покупатель --> UC_Login
+note as N3
+Condition: ошибка при регистрации/авторизации, например, \nданный
+номер телефона/почта уже используются,\n пароль неправильный\nExtension
+point: ошибка при регистрации/авторизации.
+end note
+(UC_Login) .. N3 : <<extend>>
+N3 ..> (UC_LoginError)
+UC_Login --> UCEX
+UC_LoginError --> UC_PasswordRecovery
+UC_LoginError --> UC_NewPassword
+UC_PasswordRecovery --> UCSAVE
+UCSAVE --> UC_Relogin
+UC_NewPassword --> UC_Relogin
+Покупатель --> UC_SearchProducts
+Покупатель --> UC_OpenMainPage
+UC_OpenMainPage --> UC_OpenSales
+UC_OpenSales ..> UC_SawProducts : <<include>>
+UC_OpenMainPage --> UC_SearchProducts
+UC_SearchProducts --> UC_OpenProductPage
+UC_OpenProductPage ..> UC_SawProducts : <<include>>
+UC_SawProducts --> UCF : <<include>>
+UCF --> UCPR
+UCPR --> UC_AddToFavorites
+UCPR --> UCGO
+UCGO --> UCREA
+UCREA --> UC_AddToFavorites
+UCREA --> UC_SelectProductOptions
+UC_SelectProductOptions --> UC_AddToCart
+UC_AddToCart --> UC_CartSuccess
+note as N4
+Condition: товара нет на складе \nExtension point: товар не будет добавлен в корзину.
+end note
+(UC_AddToCart) ..N4 : <<extend>>
+N4 ..> UC_OutOfStock
+UC_OutOfStock --> UC_AddToFavorites
+Покупатель --> UC_OpenCart
+UC_OpenCart ..> UC_ViewCart : <<include>>
+UC_ViewCart --> UC_Checkout
+note "Condition: товар не актуален для покупателя, либо его количество\nExtension point: удаление, измнение неактуальных товаров" as N6
+(UC_ViewCart) ..N6 : <<extend>>
+N6 ..> UC_ModifyCart
+UC_ModifyCart --> UC_Checkout
+UC_Checkout --> UC_SelectDelivery
+UC_SelectDelivery --> UC_SelectPayment
+note "Condition: выбранный ПВЗ сейчас недоступен\nExtension point: отмена выбранного ПВЗ" as N7
+(UC_SelectDelivery) ..N7 : <<extend>>
+N7 ..> UC_PVZUnavailable
+UC_PVZUnavailable --> UCSEL
+UCSEL --> UC_SelectPayment
+UC_SelectPayment --> UC_ConfirmOrder
+UC_ConfirmOrder --> UC_GOSTR
+Платежная_система --> UC_GOSTR
+UC_GOSTR --> Lichn
+Lichn --> Pover
+note "Condition: ошибка при оплате, недостаточно средств\nExtension point: выбор другого способа оплаты/пополнение карты оплаты" as N9
+(Pover) ..> N9 : <<extend>>
+N9 ..> Uvedom
+Uvedom --> UC_ChangePaymentMethod
+Uvedom --> UC_TopUpBalance
+UC_TopUpBalance ..> UC_ConfirmOrderAgain : <<include>>
+UC_ChangePaymentMethod ..> UC_ConfirmOrderAgain : <<include>>
+UC_ConfirmOrderAgain --> UC_OrderAccepted
+Pover --> SNYAT
+SNYAT --> UC_OrderAccepted
+Покупатель --> UC_OpenAccount
+UC_OpenAccount --> UC_OpenSettings
+UC_OpenSettings --> UC_ViewPersonalInfo
+UC_ViewPersonalInfo --> UC_ModifyPersonalInfo : <<extend>>
+UC_OpenSettings --> UCCHAT
+UCCHAT --> UCQ
+UC_OpenAccount --> UC_ViewPurchases
+UC_ViewPurchases --> UCBUY
+UCBUY --> UCCHAT
+UCBUY --> UCOTZ
+UCOTZ --> UC_RateAndReview
+UCBUY --> UCGO
+UC_OpenAccount --> UC_ViewDeliveries
+UC_ViewDeliveries --> UCOJID
+UCOJID --> UC_ViewOrderStatus
+UCOJID --> UC_ViewPVZInfo
+
+
+actor Оператор_службы_поддержки as SupportOperator
+(Открыть панель управления запросами) as UC_OpenRequestPanel
+(Посмотреть список всех поступивших запросов) as UC_ViewAllRequests
+(Выбор запроса для обработки) as UC_SelectRequest
+(Отображение деталей запроса) as UC_ViewRequestDetails
+(Поиск информации в базе данных) as UC_SearchInDB
+(Отправить запрос для уточнения информации) as UC_SendClarificationRequest
+(Получить уточненную информацию) as UC_GetClarification
+(Ввести ответ на запрос пользователя) as UC_InputResponse
+(Отправить ответ и закрыть запрос) as UC_CloseRequest
+(Закрыть запрос с указанием статуса) as UC_SetRequestStatus
+SupportOperator ..> UC_Login : <<include>>
+
+SupportOperator --> UC_OpenRequestPanel
+UC_OpenRequestPanel ..> UC_ViewAllRequests : <<include>>
+UC_ViewAllRequests --> UC_SelectRequest
+UC_SelectRequest --> UC_ViewRequestDetails
+UCQ --> UC_ViewRequestDetails
+
+
+UC_ViewRequestDetails --> UC_SearchInDB
+
+note right of UC_ViewRequestDetails
+Condition: дополнительная информация необходима
+Extension point: отправка уточняющего запроса.
+end note
+
+UC_ViewRequestDetails .. UC_SendClarificationRequest : <<extend>>
+UC_SendClarificationRequest --> UC_GetClarification
+UC_GetClarification --> UC_SearchInDB
+UC_SearchInDB --> UC_InputResponse
+UC_ViewRequestDetails --> UC_InputResponse
+UC_InputResponse --> UC_CloseRequest
+UC_CloseRequest --> UC_SetRequestStatus
+UC_GetClarification --> UC_InputResponse
+
+
+actor Менеджер_ПВЗ as PVZManager
+
+(Перейти на страницу с заказами) as UC_GoToOrders
+(Просмотр поступивших заказов) as UC_ViewOrderList
+(Выбор заказа для обработки) as UC_SelectOrderForProcessing
+(Перейти на страницу с информацией о заказе) as UC_ViewOrderDetails
+(Выдача товара покупателю) as UC_IssueProduct
+(Ошибка при подтверждении выдачи) as UC_ConfirmationError
+(Повторная попытка подтверждения выдачи) as UC_RetryConfirmation
+(Связаться с техподдержкой) as UC_ContactSupport
+(Просмотр деталей товаров) as UC_ViewItemDetails
+(Проверка наличия товара на складе) as UC_CheckItemStock
+(Товар есть на складе) as UC_ItemInStock
+(Отображение формы подтверждения выдачи заказа) as UC_DisplayOrderConfirmationForm
+(Ошибка при подтверждении выдачи) as UC_ConfirmationError
+(Повторная попытка подтверждения выдачи) as UC_RetryConfirmation
+(Связаться с техподдержкой) as UC_ContactSupport
+(Подтверждение выдачи заказа покупателю) as UC_ConfirmOrderIssue
+(Обновление статуса заказа) as UC_UpdateOrderStatus
+(Товара нет на складе) as UC_ItemOutOfStock
+(Выход из товара) as UC_ExitOrder
+(Оформление возврата) as UC_InitiateReturn
+(Проверка товара на целостность) as UC_CheckItemIntegrity
+(Обновление статуса заказа на "Возвращен") as UC_UpdateReturnStatus
+(Оформление возврата товара продавцу) as UC_ReturnToSeller
+(Проверка срока хранения товара на складе) as UC_CheckStorageDuration
+(Срок хранения истек) as UC_StorageExpired
+(Отметка товара как "Не выдан") as UC_MarkItemNotIssued
+
+
+PVZManager ..> UC_Login : <<include>>
+
+PVZManager --> UC_GoToOrders
+UC_GoToOrders --> UC_ViewOrderList
+UC_ViewOrderList --> UC_SelectOrderForProcessing
+UC_SelectOrderForProcessing --> UC_ViewOrderDetails
+
+UC_ConfirmationError --> UC_RetryConfirmation
+UC_ConfirmationError --> UC_ContactSupport
+
+UC_ViewOrderDetails --> UC_InitiateReturn
+UC_InitiateReturn --> UC_CheckItemIntegrity
+UC_CheckItemIntegrity --> UC_UpdateReturnStatus
+UC_UpdateReturnStatus --> UC_ReturnToSeller
+
+UC_ViewOrderDetails --> UC_ViewItemDetails
+UC_ViewItemDetails --> UC_CheckItemStock
+UC_CheckItemStock --> UC_ItemInStock
+UC_ItemInStock --> UC_IssueProduct
+UC_IssueProduct --> Soedinenie
+Soedinenie --> UC_DisplayOrderConfirmationForm
+UC_DisplayOrderConfirmationForm --> UC_ConfirmOrderIssue
+
+UC_DisplayOrderConfirmationForm .. UC_ConfirmationError : <<extend>>
+
+UC_RetryConfirmation --> UC_ConfirmOrderIssue
+UC_ContactSupport --> UC_ConfirmOrderIssue
+UC_ConfirmOrderIssue --> UC_UpdateOrderStatus
+
+UC_CheckItemStock .. UC_ItemOutOfStock : <<extend>>
+UC_ItemOutOfStock --> UC_ExitOrder
+
+UC_ViewItemDetails --> UC_CheckStorageDuration
+UC_CheckStorageDuration ..> UC_StorageExpired : <<extend>>
+UC_StorageExpired --> UC_MarkItemNotIssued
+UC_MarkItemNotIssued --> UC_ReturnToSeller
+
+
+
+actor Продавец as Seller
+actor Логистическая_система as Logistics
+
+(Перейти на страницу своих товаров) as UC_GoToMyProducts
+(Посмотреть товары) as UC_ViewProducts
+(Добавить/Удалить/Редактировать товар) as UC_ManageProduct
+(Заполнение формы с информацией о товаре) as UC_FillProductInfo
+(Публиковать товар) as UC_PublishProduct
+(Ошибка публикации товара) as UC_PublishError
+(Повторный ввод информации о товаре) as UC_RetryProductInfo
+(Перейти на страницу заказов) as UC_GoToOrderss
+(Посмотреть свои заказы) as UC_ViewOrders
+(Подтвердить заказ) as UC_ConfirmOrder
+(Отправить заказ) as UC_ShipOrder
+(Перейти на страницу возвратов) as UC_GoToReturns
+(Посмотреть возвраты) as UC_ViewReturns
+(Подтверждение возврата товара) as UC_ConfirmReturn
+(Уведомление о сроке поступления товара обратно) as UC_NotifyReturnDeadline
+(Возврат денежных средств) as UC_RefundMoney
+(Изменение информации о товаре) as UC_ModifyProductInfo
+(Сохранение изменений товара) as UC_SaveProductChanges
+(Отказ в возврате товара) as UC_RefuseReturn
+(Указание причины отказа в возврате) as UC_ProvideRefusalReason
+(Отслеживание статуса доставки) as UC_TrackDelivery
+(Уведомление о статусе доставки) as UC_DeliveryStatusUpdate
+(Проверка успешности доставки) as UC_CheckDeliverySuccess
+(Уведомление о задержке доставки) as UC_DeliveryDelayNotification
+(Публикация товара) as UC_ProductPublished
+(Cборка заказа) as SBOR
+
+Seller ..> UC_Login : <<include>>
+Seller --> UC_GoToMyProducts
+UC_GoToMyProducts ..> UC_ViewProducts : <<include>>
+UC_ViewProducts --> UC_ManageProduct
+UC_ManageProduct ..> UC_FillProductInfo : <<include>>
+UC_ManageProduct --> UC_ModifyProductInfo
+UC_ModifyProductInfo --> UC_SaveProductChanges
+UC_FillProductInfo --> UC_PublishProduct
+UC_PublishProduct --> UC_PublishError : <<extend>>
+UC_PublishError --> UC_RetryProductInfo
+UC_RetryProductInfo --> UC_ProductPublished
+UC_PublishProduct --> UC_ProductPublished
+UC_ViewProducts --> UC_ManageProduct
+
+
+Seller --> UC_GoToOrderss
+UC_GoToOrderss ..> UC_ViewOrders : <<include>>
+UC_ViewOrders --> UC_ConfirmOrder
+UC_ConfirmOrder --> UC_ShipOrder
+
+Seller --> UC_GoToReturns
+UC_GoToReturns ..> UC_ViewReturns : <<include>>
+UC_ViewReturns --> UC_ConfirmReturn
+UC_ConfirmReturn --> UC_NotifyReturnDeadline
+UC_ConfirmReturn ..> UC_RefundMoney : <<include>>
+UC_ViewReturns ..> UC_RefuseReturn : <<extend>>
+UC_RefuseReturn --> UC_ProvideRefusalReason
+UC_ReturnToSeller --> UC_ConfirmReturn
+
+Logistics --> SBOR
+SBOR --> UC_ShipOrder : контролирует отправку
+Logistics --> UC_TrackDelivery
+Logistics --> UC_DeliveryStatusUpdate
+Logistics --> UC_CheckDeliverySuccess
+Logistics --> UC_DeliveryDelayNotification
+@enduml
